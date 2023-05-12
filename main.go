@@ -26,47 +26,6 @@ type Tricks struct {
 
 type messageSlice []*Tricks
 
-func InsertNewTrick(db *sql.DB, message string) {
-	log.Println("Message text: ", message)
-	trick := strings.Split(message, ",")
-	trick_name := trick[0]
-	trick_description := trick[1]
-	trick_progress := trick[2]
-	sqlStatement := `INSERT INTO tricks (trick_name, trick_description, trick_progress) VALUES ($1, $2, $3)`
-	_, err := db.Exec(sqlStatement, trick_name, trick_description, trick_progress)
-	if err != nil {
-		panic(err)
-	}
-}
-
-func (message messageSlice) String() string {
-	var s []string
-	for _, u := range message {
-		if u != nil {
-			s = append(s, fmt.Sprintf("%s %s", u.trick_name, u.trick_description, u.trick_progress))
-		}
-	}
-	return strings.Join(s, "\n")
-}
-
-func GetAllTricks(db *sql.DB) string {
-	sqlStatement := `SELECT * FROM tricks`
-	tricks := make([]*Tricks, 0)
-	rows, err := db.Query(sqlStatement)
-	if err != nil {
-		log.Println("Error getting all tricks: ", err)
-	}
-
-	for rows.Next() {
-		trick := new(Tricks)
-		_ = rows.Scan(&trick.trick_name, &trick.trick_description, &trick.trick_progress)
-		tricks = append(tricks, trick)
-
-	}
-	fmt.Println(tricks)
-	return (messageSlice(tricks).String())
-}
-
 func main() {
 	psqlconn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", db_host, db_port, db_user, db_pass, db_name)
 
@@ -113,4 +72,45 @@ func main() {
 			bot.Send(msg)
 		}
 	}
+}
+
+func InsertNewTrick(db *sql.DB, message string) {
+	log.Println("Message text: ", message)
+	trick := strings.Split(message, ",")
+	trick_name := trick[0]
+	trick_description := trick[1]
+	trick_progress := trick[2]
+	sqlStatement := `INSERT INTO tricks (trick_name, trick_description, trick_progress) VALUES ($1, $2, $3)`
+	_, err := db.Exec(sqlStatement, trick_name, trick_description, trick_progress)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func (message messageSlice) String() string {
+	var s []string
+	for _, u := range message {
+		if u != nil {
+			s = append(s, fmt.Sprintf("%s %s", u.trick_name, u.trick_description, u.trick_progress))
+		}
+	}
+	return strings.Join(s, "\n")
+}
+
+func GetAllTricks(db *sql.DB) string {
+	sqlStatement := `SELECT * FROM tricks`
+	tricks := make([]*Tricks, 0)
+	rows, err := db.Query(sqlStatement)
+	if err != nil {
+		log.Println("Error getting all tricks: ", err)
+	}
+
+	for rows.Next() {
+		trick := new(Tricks)
+		_ = rows.Scan(&trick.trick_name, &trick.trick_description, &trick.trick_progress)
+		tricks = append(tricks, trick)
+
+	}
+	fmt.Println(tricks)
+	return (messageSlice(tricks).String())
 }
