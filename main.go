@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"strings"
 
@@ -70,6 +71,19 @@ func main() {
 			bot.Send(msg)
 		}
 	}
+
+	http.HandleFunc("/", handler)
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+	if err := http.ListenAndServe(":"+port, nil); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func handler(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Garybot is up and running!")
 }
 
 func InsertNewTrick(db *sql.DB, message string) {

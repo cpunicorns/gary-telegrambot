@@ -11,4 +11,6 @@ COPY *.go ./
 
 RUN GOOS=linux go build -o /garybot .
 
+EXPOSE 8080
+
 ENTRYPOINT [ "/garybot" ]
