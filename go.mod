@@ -1,4 +1,4 @@
-module github.com/cpunicorns/gary-telegrambot
+module github.com/cpunicorns/garybot
 
 go 1.18
 
