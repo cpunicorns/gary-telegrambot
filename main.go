@@ -7,13 +7,13 @@ import (
 	"os"
 	"strings"
 
-	_ "github.com/lib/pq"
+	_ "github.com/go-sql-driver/mysql"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-var db_host = "34.141.10.192"
-var db_port = "5400"
+var db_host = "34.107.46.5"
+var db_port = "3306"
 var db_user = os.Getenv("GARYS_TRICKS_DB_USER")
 var db_pass = os.Getenv("GARYS_TRICKS_DB_PASS")
 var db_name = "garys_tricks"
@@ -21,15 +21,13 @@ var db_name = "garys_tricks"
 type Tricks struct {
 	trick_name        string
 	trick_description string
-	trick_progress    string
+	trick_difficulty  string
 }
 
 type messageSlice []*Tricks
 
 func main() {
-	psqlconn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", db_host, db_port, db_user, db_pass, db_name)
-
-	db, err := sql.Open("postgres", psqlconn)
+	db, err := sql.Open("mysql", db_user+":"+db_pass+"@tcp("+db_host+":"+db_port+")/"+db_name)
 	if err != nil {
 		log.Println("Connection to database failed:", err)
 		panic(err)
@@ -76,12 +74,13 @@ func main() {
 
 func InsertNewTrick(db *sql.DB, message string) {
 	log.Println("Message text: ", message)
-	trick := strings.Split(message, ",")
+	unfiltered_message := strings.Replace(message, "/NewTrick ", "", -1)
+	trick := strings.Split(unfiltered_message, ",")
 	trick_name := trick[0]
 	trick_description := trick[1]
-	trick_progress := trick[2]
-	sqlStatement := `INSERT INTO tricks (trick_name, trick_description, trick_progress) VALUES ($1, $2, $3)`
-	_, err := db.Exec(sqlStatement, trick_name, trick_description, trick_progress)
+	trick_difficulty := trick[2]
+	sqlStatement := `INSERT INTO tricks (name, description, difficulty) VALUES (?, ?, ?)`
+	_, err := db.Exec(sqlStatement, trick_name, trick_description, trick_difficulty)
 	if err != nil {
 		panic(err)
 	}
@@ -91,7 +90,7 @@ func (message messageSlice) String() string {
 	var s []string
 	for _, u := range message {
 		if u != nil {
-			s = append(s, fmt.Sprintf("%s %s", u.trick_name, u.trick_description, u.trick_progress))
+			s = append(s, fmt.Sprintf("%s %s", u.trick_name, u.trick_description, u.trick_difficulty))
 		}
 	}
 	return strings.Join(s, "\n")
@@ -107,7 +106,7 @@ func GetAllTricks(db *sql.DB) string {
 
 	for rows.Next() {
 		trick := new(Tricks)
-		_ = rows.Scan(&trick.trick_name, &trick.trick_description, &trick.trick_progress)
+		_ = rows.Scan(&trick.trick_name, &trick.trick_description, &trick.trick_difficulty)
 		tricks = append(tricks, trick)
 
 	}
