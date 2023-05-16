@@ -83,7 +83,7 @@ func main() {
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Garybot is up and running!")
+	fmt.Println(w, "Garybot is up and running!")
 }
 
 func InsertNewTrick(db *sql.DB, message string) {
