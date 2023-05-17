@@ -57,7 +57,6 @@ func main() {
 	for update := range updates {
 		if update.Message != nil {
 			log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
-
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
 			msg.ReplyToMessageID = update.Message.MessageID
 			switch update.Message.Command() {
