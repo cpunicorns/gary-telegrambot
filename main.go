@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
-	"net/http"
 	"os"
 	"strings"
 
@@ -17,7 +16,7 @@ var db_host = "34.107.46.5"
 var db_port = "3306"
 var db_user = os.Getenv("GARYS_TRICKS_DB_USER")
 var db_pass = os.Getenv("GARYS_TRICKS_DB_PASS")
-var db_name = "garys_tricks"
+var db_name = "garybot"
 
 type Tricks struct {
 	trick_name        string
@@ -25,7 +24,13 @@ type Tricks struct {
 	trick_difficulty  string
 }
 
+type DiaryEntry struct {
+	text string
+	date string
+}
+
 type messageSlice []*Tricks
+type diarySlice []*DiaryEntry
 
 func main() {
 	db, err := sql.Open("mysql", db_user+":"+db_pass+"@tcp("+db_host+":"+db_port+")/"+db_name)
@@ -56,39 +61,27 @@ func main() {
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
 			msg.ReplyToMessageID = update.Message.MessageID
 			switch update.Message.Command() {
-			case "Tricks":
+			case "tricks":
 				msg.Text = GetAllTricks(db)
-			case "NewTrick":
+			case "neuerTrick":
 				InsertNewTrick(db, update.Message.Text)
-				msg.Text = "New trick added"
-			case "DiaryOverview":
-				msg.Text = "Here you can see the overview of your diary"
-			case "NewDiaryEntry":
-				msg.Text = "Here you can add a new diary entry"
+				msg.Text = "Neuer Trick wurde hinzufügt!"
+			case "tagebuch":
+				msg.Text = GetAllDiaryEntries(db)
+			case "neuerEintrag":
+				InsertNewDiaryEntry(db, update.Message.Text)
+				msg.Text = "Neuer Tagebucheintrag wurde hinzugefügt!"
 			default:
-				msg.Text = "I don't know that command"
+				msg.Text = "Wuff, ich weiß nicht, was du von mir willst."
 			}
 			bot.Send(msg)
 		}
 	}
-
-	http.HandleFunc("/", handler)
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8080"
-	}
-	if err := http.ListenAndServe(":"+port, nil); err != nil {
-		log.Fatal(err)
-	}
-}
-
-func handler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println(w, "Garybot is up and running!")
 }
 
 func InsertNewTrick(db *sql.DB, message string) {
 	log.Println("Message text: ", message)
-	unfiltered_message := strings.Replace(message, "/NewTrick ", "", -1)
+	unfiltered_message := strings.Replace(message, "/neuerTrick ", "", -1)
 	trick := strings.Split(unfiltered_message, ",")
 	trick_name := trick[0]
 	trick_description := trick[1]
@@ -104,7 +97,7 @@ func (message messageSlice) String() string {
 	var s []string
 	for _, u := range message {
 		if u != nil {
-			s = append(s, fmt.Sprintf("%s %s", u.trick_name, u.trick_description, u.trick_difficulty))
+			s = append(s, fmt.Sprintf("%s %s %s", u.trick_name, u.trick_description, u.trick_difficulty))
 		}
 	}
 	return strings.Join(s, "\n")
@@ -126,4 +119,45 @@ func GetAllTricks(db *sql.DB) string {
 	}
 	fmt.Println(tricks)
 	return (messageSlice(tricks).String())
+}
+
+func (text diarySlice) DiaryString() string {
+	var s []string
+	for _, u := range text {
+		if u != nil {
+			s = append(s, fmt.Sprintf("%s %s", u.text, u.date))
+		}
+	}
+	return strings.Join(s, "\n")
+}
+
+func GetAllDiaryEntries(db *sql.DB) string {
+	sqlStatement := `SELECT * FROM diary`
+	entries := make([]*DiaryEntry, 0)
+	rows, err := db.Query(sqlStatement)
+	if err != nil {
+		log.Println("Error getting all diary entries: ", err)
+	}
+
+	for rows.Next() {
+		entry := new(DiaryEntry)
+		_ = rows.Scan(&entry.text, &entry.date)
+		entries = append(entries, entry)
+
+	}
+	fmt.Println(entries)
+	return (diarySlice(entries).DiaryString())
+}
+
+func InsertNewDiaryEntry(db *sql.DB, message string) {
+	log.Println("Message text: ", message)
+	unfiltered_message := strings.Replace(message, "/neuerEintrag ", "", -1)
+	entry := strings.Split(unfiltered_message, ",")
+	entry_text := entry[0]
+	entry_date := entry[1]
+	sqlStatement := `INSERT INTO diary (text, date) VALUES (?, ?)`
+	_, err := db.Exec(sqlStatement, entry_text, entry_date)
+	if err != nil {
+		panic(err)
+	}
 }
