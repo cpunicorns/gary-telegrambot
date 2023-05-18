@@ -29,8 +29,14 @@ type DiaryEntry struct {
 	date string
 }
 
+type Tasks struct {
+	task    string
+	weekday string
+}
+
 type messageSlice []*Tricks
 type diarySlice []*DiaryEntry
+type taskSlice []*Tasks
 
 func main() {
 	db, err := sql.Open("mysql", db_user+":"+db_pass+"@tcp("+db_host+":"+db_port+")/"+db_name)
@@ -70,6 +76,11 @@ func main() {
 			case "neuerEintrag":
 				InsertNewDiaryEntry(db, update.Message.Text)
 				msg.Text = "Neuer Tagebucheintrag wurde hinzugefügt!"
+			case "wochenplan":
+				msg.Text = GetAllTasks(db)
+			case "neueAufgabe":
+				InsertNewTask(db, update.Message.Text)
+				msg.Text = "Neue Aufgabe wurde hinzugefügt!"
 			default:
 				msg.Text = "Wuff, ich weiß nicht, was du von mir willst."
 			}
@@ -156,6 +167,47 @@ func InsertNewDiaryEntry(db *sql.DB, message string) {
 	entry_date := entry[1]
 	sqlStatement := `INSERT INTO diary (text, date) VALUES (?, ?)`
 	_, err := db.Exec(sqlStatement, entry_text, entry_date)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func (text taskSlice) TaskString() string {
+	var s []string
+	for _, u := range text {
+		if u != nil {
+			s = append(s, fmt.Sprintf("%s %s", u.task, u.weekday))
+		}
+	}
+	return strings.Join(s, "\n")
+}
+
+func GetAllTasks(db *sql.DB) string {
+	sqlStatement := `SELECT * FROM tasks`
+	tasks := make([]*Tasks, 0)
+	rows, err := db.Query(sqlStatement)
+	if err != nil {
+		log.Println("Error getting all tasks: ", err)
+	}
+
+	for rows.Next() {
+		task := new(Tasks)
+		_ = rows.Scan(&task.task, &task.weekday)
+		tasks = append(tasks, task)
+
+	}
+	fmt.Println(tasks)
+	return (taskSlice(tasks).TaskString())
+}
+
+func InsertNewTask(db *sql.DB, message string) {
+	log.Println("Message text: ", message)
+	unfiltered_message := strings.Replace(message, "/neueAufgabe ", "", -1)
+	task := strings.Split(unfiltered_message, ",")
+	task_summary := task[0]
+	task_weekday := task[1]
+	sqlStatement := `INSERT INTO tasks (task, weekday) VALUES (?, ?)`
+	_, err := db.Exec(sqlStatement, task_summary, task_weekday)
 	if err != nil {
 		panic(err)
 	}
