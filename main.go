@@ -12,7 +12,7 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-var db_host = "34.107.46.5"
+var db_host = "172.17.0.2"
 var db_port = "3306"
 var db_user = os.Getenv("GARYS_TRICKS_DB_USER")
 var db_pass = os.Getenv("GARYS_TRICKS_DB_PASS")
