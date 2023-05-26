@@ -59,6 +59,11 @@ func main() {
 			case "neueAufgabe":
 				InsertNewTask(db, update.Message.Text)
 				msg.Text = "Neue Aufgabe wurde hinzugefügt!"
+			case "cheatsheet":
+				msg.Text = GetAllCheatsheetInfos(db)
+			case "neueInfo":
+				InsertNewCheatsheetInfo(db, update.Message.Text)
+				msg.Text = "Neue Info wurde hinzugefügt!"
 			default:
 				msg.Text = "Wuff, ich weiß nicht, was du von mir willst."
 			}

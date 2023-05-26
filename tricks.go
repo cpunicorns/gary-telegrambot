@@ -53,6 +53,7 @@ func GetAllTricks(db *sql.DB) string {
 		tricks = append(tricks, trick)
 
 	}
+
 	fmt.Println(tricks)
 	return (messageSlice(tricks).String())
 }

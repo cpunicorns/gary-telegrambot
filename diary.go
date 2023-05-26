@@ -38,6 +38,7 @@ func GetAllDiaryEntries(db *sql.DB) string {
 		entries = append(entries, entry)
 
 	}
+
 	fmt.Println(entries)
 	return (diarySlice(entries).DiaryString())
 }

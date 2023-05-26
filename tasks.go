@@ -38,6 +38,7 @@ func GetAllTasks(db *sql.DB) string {
 		tasks = append(tasks, task)
 
 	}
+
 	fmt.Println(tasks)
 	return (taskSlice(tasks).TaskString())
 }
