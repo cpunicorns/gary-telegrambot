@@ -18,7 +18,7 @@ func (text diarySlice) DiaryString() string {
 	var s []string
 	for _, u := range text {
 		if u != nil {
-			s = append(s, fmt.Sprintf("%s %s", u.text, u.date))
+			s = append(s, fmt.Sprintf("Eintrag: %s Datum: %s", u.text, u.date))
 		}
 	}
 	return strings.Join(s, "\n")
@@ -36,7 +36,6 @@ func GetAllDiaryEntries(db *sql.DB) string {
 		entry := new(DiaryEntry)
 		_ = rows.Scan(&entry.text, &entry.date)
 		entries = append(entries, entry)
-
 	}
 
 	fmt.Println(entries)

@@ -10,11 +10,11 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-var db_host = "172.17.0.2"
+var db_host = os.Getenv("GARYBOT_DB_HOST")
 var db_port = "3306"
-var db_user = os.Getenv("GARYS_TRICKS_DB_USER")
-var db_pass = os.Getenv("GARYS_TRICKS_DB_PASS")
-var db_name = "garybot"
+var db_user = os.Getenv("GARYSBOT_DB_USER")
+var db_pass = os.Getenv("GARYSBOT_DB_PASS")
+var db_name = os.Getenv("GARYSBOT_DB_NAME")
 
 func main() {
 	db, err := sql.Open("mysql", db_user+":"+db_pass+"@tcp("+db_host+":"+db_port+")/"+db_name)

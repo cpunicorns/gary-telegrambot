@@ -33,7 +33,7 @@ func (message messageSlice) String() string {
 	var s []string
 	for _, u := range message {
 		if u != nil {
-			s = append(s, fmt.Sprintf("%s %s %s", u.trick_name, u.trick_description, u.trick_difficulty))
+			s = append(s, fmt.Sprintf("Trick: %s Beschreibung: %s Schwierigkeit: %s", u.trick_name, u.trick_description, u.trick_difficulty))
 		}
 	}
 	return strings.Join(s, "\n")
