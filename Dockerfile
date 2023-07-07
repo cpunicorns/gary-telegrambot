@@ -4,12 +4,9 @@ FROM golang:1.18-alpine
 
 WORKDIR /app
 
-COPY go.mod go.sum ./
-RUN go mod download
+COPY go.mod go.sum *.go ./
 
-COPY *.go ./
-
-RUN GOOS=linux go build -o /garybot .
+RUN go mod download && GOOS=linux go build -o /garybot .
 
 EXPOSE 8080
 

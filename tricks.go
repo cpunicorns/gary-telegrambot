@@ -36,6 +36,7 @@ func (message messageSlice) String() string {
 			s = append(s, fmt.Sprintf("Trick: %s Beschreibung: %s Schwierigkeit: %s", u.trick_name, u.trick_description, u.trick_difficulty))
 		}
 	}
+	fmt.Println(s)
 	return strings.Join(s, "\n")
 }
 
